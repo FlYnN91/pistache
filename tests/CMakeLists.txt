@@ -3,7 +3,7 @@ function(pistache_test test_name)
     set(TEST_SOURCE ${test_name}.cc)
 
     add_executable(${TEST_EXECUTABLE} ${TEST_SOURCE})
-    target_link_libraries(${TEST_EXECUTABLE} gtest gtest_main pistache curl pthread)
+    target_link_libraries(${TEST_EXECUTABLE} gtest gtest_main pistache_static curl pthread)
     add_test(${test_name} ${TEST_EXECUTABLE})
 endfunction()
 
@@ -28,3 +28,16 @@ pistache_test(streaming_test)
 pistache_test(rest_server_test)
 pistache_test(string_view_test)
 pistache_test(mailbox_test)
+pistache_test(stream_test)
+pistache_test(reactor_test)
+
+if (PISTACHE_SSL)
+
+    configure_file("certs/server.crt" "certs/server.crt" COPYONLY)
+    configure_file("certs/server.key" "certs/server.key" COPYONLY)
+    configure_file("certs/client.key" "certs/client.key" COPYONLY)
+    configure_file("certs/client.crt" "certs/client.crt" COPYONLY)
+    configure_file("certs/rootCA.crt" "certs/rootCA.crt" COPYONLY)
+
+    pistache_test(https_server_test)
+endif (PISTACHE_SSL)

@@ -99,7 +99,7 @@ SegmentTreeNode::getSegmentType(const std::string_view& fragment) {
 
 std::string SegmentTreeNode::sanitizeResource(const std::string& path) {
     const auto& dup = std::regex_replace(path,
-        SegmentTreeNode::multiple_slash, "/");
+        SegmentTreeNode::multiple_slash, std::string("/"));
     if (dup[dup.length() - 1] == '/') {
         return dup.substr(1, dup.length() - 2);
     }
@@ -121,7 +121,7 @@ SegmentTreeNode::addRoute(const std::string_view& path,
           std::string_view {nullptr, 0} :
           path.substr(segment_delimiter + 1);
 
-      std::unordered_map<std::string_view, std::shared_ptr<SegmentTreeNode>> *collection;
+      std::unordered_map<std::string_view, std::shared_ptr<SegmentTreeNode>> *collection = nullptr;
       const auto fragmentType = getSegmentType(current_segment);
       switch (fragmentType) {
         case SegmentType::Fixed:
@@ -171,7 +171,7 @@ bool Pistache::Rest::SegmentTreeNode::removeRoute(const std::string_view& path) 
                                 std::string_view {nullptr, 0} :
                                 path.substr(segment_delimiter + 1);
 
-        std::unordered_map<std::string_view, std::shared_ptr<SegmentTreeNode>> *collection;
+        std::unordered_map<std::string_view, std::shared_ptr<SegmentTreeNode>> *collection = nullptr;
         auto fragmentType = getSegmentType(current_segment);
         switch (fragmentType) {
             case SegmentType::Fixed:
@@ -280,7 +280,7 @@ Pistache::Rest::SegmentTreeNode::findRoute(
     } else {  // current leaf requested, or empty final optional
         if (!optional_.empty()) {
             // in case of more than one optional at this point, as it is an
-            // ambuiguity, it is resolved by using the first optional
+            // ambiguity, it is resolved by using the first optional
             auto optional = optional_.begin();
             // std::string opt {optional->first.data(), optional->first.length()};
             return optional->second->findRoute(path, params, splats);
@@ -321,19 +321,7 @@ RouterHandler::onRequest(
         Http::ResponseWriter response)
 {
     auto resp = response.clone();
-    auto result = router->route(req, std::move(resp));
-
-    /* @Feature: add support for a custom NotFound handler */
-    if (result == Route::Status::NotFound)
-    {
-        if (router->hasNotFoundHandler())
-        {
-            auto resp2 = response.clone();
-            router->invokeNotFoundHandler(req, std::move(resp2));
-        }
-        else
-            response.send(Http::Code::Not_Found, "Could not find a matching route");
-    }
+    router->route(req, std::move(resp));
 }
 
 } // namespace Private
@@ -453,7 +441,11 @@ Router::route(const Http::Request& req, Http::ResponseWriter response) {
         if (handler1 == Route::Result::Ok) return Route::Status::Match;
     }
 
-    if (hasNotFoundHandler()) invokeNotFoundHandler(req, std::move(response));
+    if (hasNotFoundHandler()) {
+      invokeNotFoundHandler(req, std::move(response));
+    } else {
+      response.send(Http::Code::Not_Found, "Could not find a matching route");
+    }
     return Route::Status::NotFound;
 }
 
