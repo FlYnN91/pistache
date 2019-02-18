@@ -19,6 +19,10 @@
 #include <pistache/async.h>
 #include <pistache/reactor.h>
 
+#ifdef PISTACHE_USE_SSL
+#include <openssl/ssl.h>
+#endif /* PISTACHE_USE_SSL */
+
 namespace Pistache {
 namespace Tcp {
 
@@ -48,8 +52,6 @@ public:
             Flags<Options> options = Options::None,
             int backlog = Const::MaxBacklog);
     void setHandler(const std::shared_ptr<Handler>& handler);
-    
-    static bool systemSupportsIpv6();
 
     void bind();
     void bind(const Address& address);
@@ -69,8 +71,11 @@ public:
 
     void pinWorker(size_t worker, const CpuSet& set);
 
+    void setupSSL(const std::string &cert_path, const std::string &key_path, bool use_compression);
+    void setupSSLAuth(const std::string &ca_file, const std::string &ca_path, int (*cb)(int, void *));
+
 private: 
-    Address addr_; 
+    Address addr_;
     int listen_fd;
     int backlog_;
     NotifyFd shutdownFd;
@@ -80,7 +85,6 @@ private:
     std::thread acceptThread;
 
     size_t workers_;
-    std::shared_ptr<Transport> transport_;
     std::shared_ptr<Handler> handler_;
 
     Aio::Reactor reactor_;
@@ -89,6 +93,8 @@ private:
     void handleNewConnection();
     void dispatchPeer(const std::shared_ptr<Peer>& peer);
 
+    bool useSSL_;
+    void *ssl_ctx_;
 };
 
 } // namespace Tcp
