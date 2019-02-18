@@ -10,6 +10,8 @@
 #include <memory>
 #include <thread>
 
+#define __USE_GNU
+
 #include <sys/resource.h>
 
 #include <pistache/tcp.h>

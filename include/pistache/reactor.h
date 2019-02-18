@@ -15,6 +15,8 @@
 #include <pistache/net.h>
 #include <pistache/prototype.h>
 
+#define __USE_GNU
+
 #include <sys/time.h>
 #include <sys/resource.h>
 
