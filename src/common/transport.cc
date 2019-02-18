@@ -13,6 +13,9 @@
 #include <pistache/tcp.h>
 #include <pistache/os.h>
 
+#ifndef RUSAGE_THREAD
+#define RUSAGE_THREAD 1
+#endif
 
 namespace Pistache {
 

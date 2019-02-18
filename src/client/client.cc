@@ -17,6 +17,9 @@
 #include <sstream>
 #include <string>
 
+#ifndef RUSAGE_THREAD
+#define RUSAGE_THREAD 1
+#endif
 
 namespace Pistache {
 
